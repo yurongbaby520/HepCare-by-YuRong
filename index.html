@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化療前，別忽略B肝 - 課後測驗與滿意度調查</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fff5f8 0%, #f0f4ff 50%, #f3e8ff 100%);
+            color: #334155;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            /* 禁用文字選取與複製 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .tech-font { font-family: 'Orbitron', sans-serif; }
+
+        .metallic-title {
+            background: linear-gradient(135deg, #0284c7 0%, #ec4899 50%, #8b5cf6 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shine 6s linear infinite;
+        }
+
+        @keyframes shine { to { background-position: 200% center; } }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(236, 72, 153, 0.08);
+        }
+
+        /* 隱藏預設單選鈕，改用漂亮的膠囊按鈕 */
+        .pill-radio input[type="radio"] {
+            display: none;
+        }
+
+        .pill-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1.5px solid rgba(186, 230, 253, 0.6);
+            color: #475569;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .pill-radio input[type="radio"]:checked + .pill-label {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.35);
+            transform: translateY(-2px);
+            font-weight: 700;
+        }
+
+        .quiz-pill-true input[type="radio"]:checked + .pill-label {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        .quiz-pill-false input[type="radio"]:checked + .pill-label {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+        }
+
+        .pill-label:hover {
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #38bdf8 0%, #ec4899 50%, #a855f7 100%);
+            background-size: 200% auto;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.3);
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background-position: right center;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(236, 72, 153, 0.45);
+        }
+
+        .section-badge {
+            background: linear-gradient(90deg, #e0f2fe 0%, #fce7f3 100%);
+            border-left: 4px solid #38bdf8;
+        }
+    </style>
+</head>
+<body class="py-10 px-4 sm:px-8">
+
+    <!-- 3D 動態背景 -->
+    <div id="canvas-container"></div>
+
+    <main class="max-w-3xl mx-auto relative z-10 space-y-8">
+        
+        <!-- Header 區塊 -->
+        <header class="glass-card rounded-[2.5rem] p-8 sm:p-10 text-center relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-sky-200 rounded-full blur-2xl opacity-50"></div>
+            <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-pink-200 rounded-full blur-2xl opacity-50"></div>
+            
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-sky-600 bg-sky-50 border border-sky-200 mb-4 tracking-wider uppercase">
+                <svg class="w-4 h-4 text-sky-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+                醫療衛教課後回饋系統
+            </span>
+            
+            <h1 class="text-2xl sm:text-4xl font-black metallic-title leading-tight mb-3">
+                課後測驗：化療前，別忽略B肝
+            </h1>
+            <p class="text-slate-500 text-sm sm:text-base font-normal max-w-xl mx-auto">
+                感謝您觀看本衛教影片！請花費 2 分鐘完成基本資料、滿意度調查及課後小測驗，幫助我們提供更好的衛教服務。
+            </p>
+        </header>
+
+        <!-- 表單內容 -->
+        <form id="surveyForm" class="space-y-8">
+
+            <!-- 第一部分：基本資料 -->
+            <section class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+                <div class="section-badge p-3 rounded-r-xl flex items-center gap-3">
+                    <span class="text-sky-600 font-bold text-lg tech-font">PART 01</span>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-700">基本資料 / Basic Information</h2>
+                </div>
+
+                <!-- 年齡 -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-700">
+                        您的年紀 / Your age <span class="text-pink-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <label class="pill-radio"><input type="radio" name="age" value="≦18" required><span class="pill-label">≦ 18</span></label>
+                        <label class="pill-radio"><input type="radio" name="age" value="19-29"><span class="pill-label">19 - 29</span></label>
+                        <label class="pill-radio"><input type="radio" name="age" value="30-39"><span class="pill-label">30 - 39</span></label>
+                        <label class="pill-radio"><input type="radio" name="age" value="40-49"><span class="pill-label">40 - 49</span></label>
+                        <label class="pill-radio"><input type="radio" name="age" value="50-59"><span class="pill-label">50 - 59</span></label>
+                        <label class="pill-radio"><input type="radio" name="age" value="60-69"><span class="pill-label">60 - 69</span></label>
+                        <label class="pill-radio"><input type="radio" name="age" value="≧70"><span class="pill-label">≧ 70</span></label>
+                    </div>
+                </div>
+
+                <!-- 性別 -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-700">
+                        性別 / Gender <span class="text-pink-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="pill-radio"><input type="radio" name="gender" value="男 Male" required><span class="pill-label">👨 男 Male</span></label>
+                        <label class="pill-radio"><input type="radio" name="gender" value="女 Female"><span class="pill-label">👩 女 Female</span></label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 第二部分：滿意度調查 -->
+            <section class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+                <div class="section-badge p-3 rounded-r-xl flex items-center gap-3">
+                    <span class="text-sky-600 font-bold text-lg tech-font">PART 02</span>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-700">滿意度調查 / Satisfaction Survey</h2>
+                </div>
+
+                <!-- 影片語言 -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-700">
+                        影片語言 / Video Language <span class="text-pink-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="pill-radio"><input type="radio" name="video_lang" value="中文" required><span class="pill-label">中文</span></label>
+                        <label class="pill-radio"><input type="radio" name="video_lang" value="English"><span class="pill-label">English</span></label>
+                    </div>
+                </div>
+
+                <!-- 內容清楚明瞭 -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-700">
+                        衛教內容清楚明瞭 / Was the health education content clear and easy to understand? <span class="text-pink-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                        <label class="pill-radio"><input type="radio" name="clarity" value="非常同意" required><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">非常同意</span><span class="text-xs font-normal opacity-80 mt-0.5">Strongly agree</span></span></label>
+                        <label class="pill-radio"><input type="radio" name="clarity" value="同意"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">同意</span><span class="text-xs font-normal opacity-80 mt-0.5">Agree</span></span></label>
+                        <label class="pill-radio"><input type="radio" name="clarity" value="普通"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">普通</span><span class="text-xs font-normal opacity-80 mt-0.5">Neutral</span></span></label>
+                        <label class="pill-radio"><input type="radio" name="clarity" value="不同意"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">不同意</span><span class="text-xs font-normal opacity-80 mt-0.5">Disagree</span></span></label>
+                        <label class="pill-radio col-span-2 sm:col-span-1"><input type="radio" name="clarity" value="非常不同意"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">非常不同意</span><span class="text-xs font-normal opacity-80 mt-0.5">Strongly disagree</span></span></label>
+                    </div>
+                </div>
+
+                <!-- 觀看滿意度 -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-slate-700">
+                        影片觀看滿意度 / Satisfaction with this video <span class="text-pink-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                        <label class="pill-radio"><input type="radio" name="satisfaction" value="非常滿意" required><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">非常滿意</span><span class="text-xs font-normal opacity-80 mt-0.5">Very satisfied</span></span></label>
+                        <label class="pill-radio"><input type="radio" name="satisfaction" value="滿意"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">滿意</span><span class="text-xs font-normal opacity-80 mt-0.5">Satisfied</span></span></label>
+                        <label class="pill-radio"><input type="radio" name="satisfaction" value="普通"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">普通</span><span class="text-xs font-normal opacity-80 mt-0.5">Neutral</span></span></label>
+                        <label class="pill-radio"><input type="radio" name="satisfaction" value="不滿意"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">不滿意</span><span class="text-xs font-normal opacity-80 mt-0.5">Dissatisfied</span></span></label>
+                        <label class="pill-radio col-span-2 sm:col-span-1"><input type="radio" name="satisfaction" value="非常不滿意"><span class="pill-label flex flex-col items-center justify-center text-center py-2.5 px-2"><span class="text-sm font-bold">非常不滿意</span><span class="text-xs font-normal opacity-80 mt-0.5">Very dissatisfied</span></span></label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 第三部分：課後測驗 -->
+            <section class="glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+                <div class="section-badge p-3 rounded-r-xl flex items-center gap-3">
+                    <span class="text-sky-600 font-bold text-lg tech-font">PART 03</span>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-700">課後測驗 / Post-Lesson Quiz</h2>
+                </div>
+
+                <!-- Q1 -->
+                <div class="p-4 bg-white/40 rounded-2xl border border-sky-100 space-y-3">
+                    <p class="text-sm sm:text-base font-bold text-slate-800 leading-relaxed">
+                        Q1. 化學治療可能會降低免疫力，增加 B 型肝炎病毒再活化的風險。
+                    </p>
+                    <p class="text-sm sm:text-base text-slate-600 font-medium italic">
+                        Chemotherapy may weaken the immune system and increase the risk of hepatitis B virus (HBV) reactivation.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                        <label class="pill-radio quiz-pill-true"><input type="radio" name="q1" value="O" required><span class="pill-label text-base font-bold">⭕ O ( True )</span></label>
+                        <label class="pill-radio quiz-pill-false"><input type="radio" name="q1" value="X"><span class="pill-label text-base font-bold">❌ X ( False )</span></label>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="p-4 bg-white/40 rounded-2xl border border-sky-100 space-y-3">
+                    <p class="text-sm sm:text-base font-bold text-slate-800 leading-relaxed">
+                        Q2. 化療前接受 B 型肝炎預防性治療，有助於預防 B 型肝炎病毒再活化。
+                    </p>
+                    <p class="text-sm sm:text-base text-slate-600 font-medium italic">
+                        Receiving preventive antiviral therapy before chemotherapy helps reduce the risk of hepatitis B virus (HBV) reactivation.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                        <label class="pill-radio quiz-pill-true"><input type="radio" name="q2" value="O" required><span class="pill-label text-base font-bold">⭕ O ( True )</span></label>
+                        <label class="pill-radio quiz-pill-false"><input type="radio" name="q2" value="X"><span class="pill-label text-base font-bold">❌ X ( False )</span></label>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="p-4 bg-white/40 rounded-2xl border border-sky-100 space-y-3">
+                    <p class="text-sm sm:text-base font-bold text-slate-800 leading-relaxed">
+                        Q3. 即使肝指數正常，仍應依照醫囑持續服用 B 型肝炎抗病毒藥。
+                    </p>
+                    <p class="text-sm sm:text-base text-slate-600 font-medium italic">
+                        Even if your liver enzyme levels are normal, you should continue taking hepatitis B antiviral medication as prescribed by your doctor.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                        <label class="pill-radio quiz-pill-true"><input type="radio" name="q3" value="O" required><span class="pill-label text-base font-bold">⭕ O ( True )</span></label>
+                        <label class="pill-radio quiz-pill-false"><input type="radio" name="q3" value="X"><span class="pill-label text-base font-bold">❌ X ( False )</span></label>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="p-4 bg-white/40 rounded-2xl border border-sky-100 space-y-3">
+                    <p class="text-sm sm:text-base font-bold text-slate-800 leading-relaxed">
+                        Q4. 遵從醫囑、規律服藥及定期追蹤，有助於預防 B 型肝炎病毒再活化。
+                    </p>
+                    <p class="text-sm sm:text-base text-slate-600 font-medium italic">
+                        Following your doctor's instructions, taking your medication as prescribed, and attending regular follow-up visits help prevent HBV reactivation.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                        <label class="pill-radio quiz-pill-true"><input type="radio" name="q4" value="O" required><span class="pill-label text-base font-bold">⭕ O ( True )</span></label>
+                        <label class="pill-radio quiz-pill-false"><input type="radio" name="q4" value="X"><span class="pill-label text-base font-bold">❌ X ( False )</span></label>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- 提交按鈕 -->
+            <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-black py-5 rounded-2xl text-lg sm:text-xl tracking-widest uppercase transition-all">
+                提交問卷與測驗 / Submit Form
+            </button>
+        </form>
+
+    </main>
+
+    <!-- 提交結果與測驗成績彈窗 -->
+    <div id="resultModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md hidden">
+        <div class="glass-card max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-6 text-center animate-fade-in relative overflow-hidden">
+            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-sky-400 to-pink-400 p-1 flex items-center justify-center shadow-lg">
+                <div class="w-full h-full bg-white rounded-full flex items-center justify-center">
+                    <span class="text-3xl font-black text-sky-500" id="modalScoreDisplay">100</span>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-2xl font-black text-slate-800" id="modalTitle">資料提交成功！</h3>
+                <p class="text-slate-600 text-sm" id="modalSubtext">感謝您的寶貴意見與參與。</p>
+            </div>
+
+            <!-- 成績與解析細節 -->
+            <div class="bg-white/60 p-4 rounded-2xl text-left text-xs sm:text-sm space-y-2 border border-sky-100 max-h-48 overflow-y-auto">
+                <p class="font-bold text-sky-700 border-b border-sky-100 pb-2">測驗解答檢視 (Correct Answers):</p>
+                <ul class="space-y-1.5 text-slate-600">
+                    <li><span class="text-emerald-600 font-bold">✓ Q1: ⭕ O</span> — 化療降免疫力，確實增B肝活化風險</li>
+                    <li><span class="text-emerald-600 font-bold">✓ Q2: ⭕ O</span> — 預防性抗病毒藥有助降低風險</li>
+                    <li><span class="text-emerald-600 font-bold">✓ Q3: ⭕ O</span> — 肝指數正常仍須依醫囑持續服藥</li>
+                    <li><span class="text-emerald-600 font-bold">✓ Q4: ⭕ O</span> — 規律服藥與定期追蹤極為重要</li>
+                </ul>
+            </div>
+
+            <button onclick="location.reload()" class="w-full btn-submit text-white font-bold py-3.5 rounded-xl uppercase text-sm">
+                完成並返回首頁 / Finish
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Three.js 明亮星幻動態背景 ---
+        let scene, camera, renderer, particles = [], clouds = [];
+
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 25;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // 飄浮微粒 / 星星
+            const pGeo = new THREE.SphereGeometry(0.15, 8, 8);
+            const pColors = [0x38bdf8, 0xf472b6, 0xc084fc, 0xbae6fd];
+            
+            for (let i = 0; i < 60; i++) {
+                const mat = new THREE.MeshBasicMaterial({
+                    color: pColors[Math.floor(Math.random() * pColors.length)],
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const mesh = new THREE.Mesh(pGeo, mat);
+                mesh.position.set(
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 50,
+                    (Math.random() - 0.5) * 20
+                );
+                mesh.userData = {
+                    speedY: Math.random() * 0.02 + 0.005,
+                    speedX: (Math.random() - 0.5) * 0.01
+                };
+                scene.add(mesh);
+                particles.push(mesh);
+            }
+
+            // 柔和光斑雲
+            for (let i = 0; i < 8; i++) {
+                const cGeo = new THREE.SphereGeometry(Math.random() * 3 + 2, 16, 16);
+                const cMat = new THREE.MeshPhongMaterial({
+                    color: pColors[i % pColors.length],
+                    transparent: true,
+                    opacity: 0.12,
+                    emissive: pColors[i % pColors.length],
+                    emissiveIntensity: 0.2
+                });
+                const cloud = new THREE.Mesh(cGeo, cMat);
+                cloud.position.set(
+                    (Math.random() - 0.5) * 40,
+                    (Math.random() - 0.5) * 30,
+                    (Math.random() - 0.5) * 15
+                );
+                cloud.userData = { speed: Math.random() * 0.01 + 0.003 };
+                scene.add(cloud);
+                clouds.push(cloud);
+            }
+
+            // 燈光
+            const light = new THREE.DirectionalLight(0xffffff, 0.8);
+            light.position.set(1, 1, 1);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 粒子移動
+            particles.forEach(p => {
+                p.position.y += p.userData.speedY;
+                p.position.x += p.userData.speedX;
+                if (p.position.y > 25) p.position.y = -25;
+            });
+
+            // 雲朵緩慢旋轉
+            clouds.forEach(c => {
+                c.rotation.y += c.userData.speed;
+                c.rotation.x += c.userData.speed * 0.5;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.onload = initThree;
+
+        // --- 防複製、防右鍵與防開啟開發者工具保護機制 ---
+        // 1. 禁用滑鼠右鍵選單
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 2. 禁用複製、剪下、選擇文字
+        document.addEventListener('copy', function(e) { e.preventDefault(); });
+        document.addEventListener('cut', function(e) { e.preventDefault(); });
+        document.addEventListener('selectstart', function(e) { e.preventDefault(); });
+
+        // 3. 禁用鍵盤快捷鍵 (F12, Ctrl+U, Ctrl+Shift+I/J/C, Ctrl+S 等)
+        document.addEventListener('keydown', function(e) {
+            // F12 鍵
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + Shift + I / J / C (開啟審查元素 / 主控台)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
+                e.preventDefault();
+                return false;
+            }
+            // Mac 上 Cmd + Alt + I / J / C
+            if (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + U / Cmd + U (檢視原始碼)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl + S / Cmd + S (儲存網頁)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'S' || e.key === 's')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // --- 2. 表單提交與自動計分邏輯 ---
+        const form = document.getElementById('surveyForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const modal = document.getElementById('resultModal');
+        const scoreDisplay = document.getElementById('modalScoreDisplay');
+
+        // 正確答案定義 (Q1-Q4 皆為 O)
+        const correctAnswers = { q1: 'O', q2: 'O', q3: 'O', q4: 'O' };
+
+        // 已更新為您提供部署的 Web 應用程式 URL
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzSGdzh3nRdk2z80jKms4z9Eu2b4zcRaEWbravTe3TwZkq70rE27RunU7cQlPGj28goNA/exec';
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.innerText = '資料發送中...';
+
+            const formData = new FormData(form);
+            let score = 0;
+
+            // 計算測驗分數
+            Object.keys(correctAnswers).forEach(key => {
+                if (formData.get(key) === correctAnswers[key]) {
+                    score += 25; // 每題 25 分，總分 100
+                }
+            });
+
+            // 準備傳送到 Google Sheets 的資料
+            const payload = new URLSearchParams();
+            payload.append('age', formData.get('age') || '');
+            payload.append('gender', formData.get('gender') || '');
+            payload.append('video_lang', formData.get('video_lang') || '');
+            payload.append('clarity', formData.get('clarity') || '');
+            payload.append('satisfaction', formData.get('satisfaction') || '');
+            payload.append('q1', formData.get('q1') || '');
+            payload.append('q2', formData.get('q2') || '');
+            payload.append('q3', formData.get('q3') || '');
+            payload.append('q4', formData.get('q4') || '');
+            payload.append('score', score);
+
+            // 發送資料至 Google Apps Script
+            if (scriptURL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                // 若尚未填入 scriptURL 的提示
+                setTimeout(() => {
+                    scoreDisplay.innerText = score + '分';
+                    modal.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = '提交問卷與測驗 / Submit Form';
+                }, 500);
+            } else {
+                fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: payload.toString()
+                })
+                .then(() => {
+                    scoreDisplay.innerText = score + '分';
+                    modal.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = '提交問卷與測驗 / Submit Form';
+                })
+                .catch(error => {
+                    console.error('Submission Error:', error);
+                    alert('資料發送失敗，請檢查網路連線或稍後再試。');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = '提交問卷與測驗 / Submit Form';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
