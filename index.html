@@ -507,21 +507,7 @@
             payload.append('score', score);
 
             // 發送資料至 Google Apps Script
-            fetch(scriptURL,{
-    method:"POST",
-    mode:"no-cors",
-    headers:{
-        "Content-Type":"application/x-www-form-urlencoded"
-    },
-    body:payload.toString()
-})
-.then(()=>{
-    scoreDisplay.innerText = score + '分';
-    modal.classList.remove('hidden');
-})
-.catch(err=>{
-    console.error(err);
-}); {
+            if (scriptURL === 'https://script.google.com/macros/s/AKfycbxJoBT7HsQm2Nx3t1WJxVtPtIm-dhSAOJnhTjDPsLMxdPsAEq5KUWeR1oHG0Vub8YBfhA/exec') {
                 // 若尚未填入 scriptURL 的提示
                 setTimeout(() => {
                     scoreDisplay.innerText = score + '分';
