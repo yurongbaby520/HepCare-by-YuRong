@@ -426,46 +426,20 @@
         window.onload = initThree;
 
         // --- 防複製、防右鍵與防開啟開發者工具保護機制 ---
-        // 1. 禁用滑鼠右鍵選單
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        // 2. 禁用複製、剪下、選擇文字
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
         document.addEventListener('copy', function(e) { e.preventDefault(); });
         document.addEventListener('cut', function(e) { e.preventDefault(); });
         document.addEventListener('selectstart', function(e) { e.preventDefault(); });
 
-        // 3. 禁用鍵盤快捷鍵 (F12, Ctrl+U, Ctrl+Shift+I/J/C, Ctrl+S 等)
         document.addEventListener('keydown', function(e) {
-            // F12 鍵
-            if (e.key === 'F12' || e.keyCode === 123) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + Shift + I / J / C (開啟審查元素 / 主控台)
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
-                e.preventDefault();
-                return false;
-            }
-            // Mac 上 Cmd + Alt + I / J / C
-            if (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + U / Cmd + U (檢視原始碼)
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
-                e.preventDefault();
-                return false;
-            }
-            // Ctrl + S / Cmd + S (儲存網頁)
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'S' || e.key === 's')) {
-                e.preventDefault();
-                return false;
-            }
+            if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) { e.preventDefault(); return false; }
+            if (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) { e.preventDefault(); return false; }
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) { e.preventDefault(); return false; }
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'S' || e.key === 's')) { e.preventDefault(); return false; }
         });
 
-        // --- 2. 表單提交與自動計分邏輯 ---
+        // --- 2. 表單提交與數據傳送邏輯 ---
         const form = document.getElementById('surveyForm');
         const submitBtn = document.getElementById('submitBtn');
         const modal = document.getElementById('resultModal');
@@ -474,7 +448,7 @@
         // 正確答案定義 (Q1-Q4 皆為 O)
         const correctAnswers = { q1: 'O', q2: 'O', q3: 'O', q4: 'O' };
 
-        // 已更新為您提供部署的 Web 應用程式 URL
+        // 您的 Google Apps Script 部署 URL
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxJoBT7HsQm2Nx3t1WJxVtPtIm-dhSAOJnhTjDPsLMxdPsAEq5KUWeR1oHG0Vub8YBfhA/exec';
 
         form.addEventListener('submit', (e) => {
@@ -493,7 +467,7 @@
                 }
             });
 
-            // 準備傳送到 Google Sheets 的資料
+            // 打包填答資料
             const payload = new URLSearchParams();
             payload.append('age', formData.get('age') || '');
             payload.append('gender', formData.get('gender') || '');
@@ -506,37 +480,27 @@
             payload.append('q4', formData.get('q4') || '');
             payload.append('score', score);
 
-            // 發送資料至 Google Apps Script
-            if (scriptURL === 'https://script.google.com/macros/s/AKfycbxJoBT7HsQm2Nx3t1WJxVtPtIm-dhSAOJnhTjDPsLMxdPsAEq5KUWeR1oHG0Vub8YBfhA/exec') {
-                // 若尚未填入 scriptURL 的提示
-                setTimeout(() => {
-                    scoreDisplay.innerText = score + '分';
-                    modal.classList.remove('hidden');
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = '提交問卷與測驗 / Submit Form';
-                }, 500);
-            } else {
-                fetch(scriptURL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: payload.toString()
-                })
-                .then(() => {
-                    scoreDisplay.innerText = score + '分';
-                    modal.classList.remove('hidden');
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = '提交問卷與測驗 / Submit Form';
-                })
-                .catch(error => {
-                    console.error('Submission Error:', error);
-                    alert('資料發送失敗，請檢查網路連線或稍後再試。');
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = '提交問卷與測驗 / Submit Form';
-                });
-            }
+            // 正式透過 Fetch API POST 資料至 Google Apps Script
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: payload.toString()
+            })
+            .then(() => {
+                scoreDisplay.innerText = score + '分';
+                modal.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerText = '提交問卷與測驗 / Submit Form';
+            })
+            .catch(error => {
+                console.error('Submission Error:', error);
+                alert('資料發送失敗，請檢查網路連線或稍後再試。');
+                submitBtn.disabled = false;
+                submitBtn.innerText = '提交問卷與測驗 / Submit Form';
+            });
         });
     </script>
 </body>
